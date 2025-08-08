@@ -258,6 +258,7 @@ The application includes integration tests that verify:
 
 *This section will be updated as new features are planned and implemented.*
 
+- [x] **Kafka Service Cycle**: Comprehensive message processing system for action management (see [KAFKA_SERVICE_CYCLE.md](KAFKA_SERVICE_CYCLE.md))
 - [ ] Advanced user authentication and authorization
 - [ ] Real-time price monitoring integration
 - [ ] Action execution engine
@@ -275,10 +276,12 @@ This application follows a layered architecture:
 ```
 src/main/java/com/example/evooq/demo/
 ├── domain/          # Domain entities and business logic
+├── kafka/           # Kafka message models and consumers  
 ├── resource/        # REST controllers and DTOs
 │   ├── controller/  # REST endpoints
 │   ├── model/       # Resource DTOs
 │   └── mapper/      # Entity-DTO mappings
+├── services/        # Business services and cycle orchestration
 └── DemoApplication  # Main Spring Boot application
 ```
 
