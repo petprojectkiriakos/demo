@@ -11,7 +11,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     outputs:
-      tests-passing: ${{ steps.set-output.outputs.tests-passing }}
+      tests-passing: ${{ steps.check-tests.outputs.tests-passing }}
     steps:
       - name: Check if tests are passing on main
         id: check-tests
@@ -34,11 +34,7 @@ jobs:
   
             const latestRun = workflowRuns.workflow_runs[0];
             core.setOutput('result', latestRun.conclusion === 'success' ? 'true' : 'false');
-
-      - name: Set job output
-        id: set-output
-        run: echo "tests-passing=${{ steps.check-tests.outputs.result }}" >> $GITHUB_OUTPUT
-
+            return;
 
   release:
     needs: validate
