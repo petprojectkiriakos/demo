@@ -33,8 +33,14 @@ jobs:
             }
   
             const latestRun = workflowRuns.workflow_runs[0];
-            core.setOutput('result', latestRun.conclusion === 'success' ? 'true' : 'false');
-
+            console.log(latestRun.conclusion);
+            if( latestRun.conclusion === 'success' ) {
+               console.log('Output result set to true');
+               core.setOutput('result', 'true');
+               return;
+            }
+            core.setOutput('result', 'false');
+             
       - name: Log check-tests output
         run: echo "Step output result = ${{ steps.check-tests.outputs.result }}"
         
