@@ -34,8 +34,10 @@ jobs:
   
             const latestRun = workflowRuns.workflow_runs[0];
             core.setOutput('result', latestRun.conclusion === 'success' ? 'true' : 'false');
-            return;
 
+      - name: Log check-tests output
+        run: echo "Step output result = ${{ steps.check-tests.outputs.result }}"
+        
   release:
     needs: validate
     runs-on: ubuntu-latest
