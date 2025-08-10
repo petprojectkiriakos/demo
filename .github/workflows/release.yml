@@ -7,12 +7,11 @@ on:
         description: 'Release version (e.g., 1.0.0)'
         required: true
         type: string
-    branches:
-      - main
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     outputs:
       tests-passing: ${{ steps.check-tests.outputs.result }}
     steps:
@@ -29,24 +28,28 @@ jobs:
               status: 'completed',
               per_page: 1
             });
-            
+
             if (workflowRuns.total_count === 0) {
-              throw new Error('No completed test runs found on main branch');
+              console.log('❌ No completed test runs found on main branch');
+              core.setOutput('result', 'false');
+              return;
             }
-            
+
             const latestRun = workflowRuns.workflow_runs[0];
             if (latestRun.conclusion !== 'success') {
-              throw new Error(`Latest test run failed with conclusion: ${latestRun.conclusion}`);
+              console.log(`❌ Latest test run failed with conclusion: ${latestRun.conclusion}`);
+              core.setOutput('result', 'false');
+              return;
             }
-            
-            console.log(`Latest test run passed: ${latestRun.html_url}`);
+
+            console.log(`✅ Latest test run passed: ${latestRun.html_url}`);
             core.setOutput('result', 'true');
 
   release:
     needs: validate
     runs-on: ubuntu-latest
     if: needs.validate.outputs.tests-passing == 'true'
-    
+
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v4
