@@ -41,8 +41,13 @@ jobs:
             }
             core.setOutput('result', 'false');
              
-      - name: Log check-tests output
-        run: echo "Step output result = ${{ steps.check-tests.outputs.result }}"
+      - name: Set job output
+        id: set-job-output
+        run: echo "tests-passing=${{ steps.check-tests.outputs.result }}" >> $GITHUB_OUTPUT
+
+      - name: Log job output
+        run: echo "tests-passing=${{ steps.check-tests.outputs.result }}"
+
         
   release:
     needs: validate
