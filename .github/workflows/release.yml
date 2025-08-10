@@ -34,6 +34,7 @@ jobs:
   
             const latestRun = workflowRuns.workflow_runs[0];
             core.setOutput('result', latestRun.conclusion === 'success' ? 'true' : 'false');
+
       - name: Set job output
         id: set-output
         run: echo "tests-passing=${{ steps.check-tests.outputs.result }}" >> $GITHUB_OUTPUT
