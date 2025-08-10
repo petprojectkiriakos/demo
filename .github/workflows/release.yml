@@ -40,7 +40,7 @@ jobs:
             }
             
             console.log(`Latest test run passed: ${latestRun.html_url}`);
-            return 'true';
+            core.setOutput('result', 'true');
 
   release:
     needs: validate
