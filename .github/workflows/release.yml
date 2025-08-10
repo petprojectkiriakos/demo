@@ -26,6 +26,7 @@ jobs:
               status: 'completed',
               per_page: 1
             });
+            const core = require('@actions/core');
   
             if (workflowRuns.total_count === 0) {
               core.setOutput('result', 'false');
