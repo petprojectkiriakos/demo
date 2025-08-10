@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  # First ensure all tests pass before proceeding with release
+  check-tests:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Check code format with Spotless
+        run: ./gradlew spotlessCheck
+      
+      - name: Build with Gradle
+        run: ./gradlew build
+      
+      - name: Run tests
+        run: ./gradlew test
+
+  release:
+    runs-on: ubuntu-latest
+    needs: check-tests
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Create release branch
+        run: |
+          RELEASE_VERSION="${{ inputs.release_version }}"
+          RELEASE_BRANCH="release-${RELEASE_VERSION}"
+          
+          echo "Creating release branch: ${RELEASE_BRANCH}"
+          git checkout -b "${RELEASE_BRANCH}"
+      
+      - name: Update version in gradle.properties
+        run: |
+          RELEASE_VERSION="${{ inputs.release_version }}"
+          echo "Updating version to: ${RELEASE_VERSION}"
+          echo "version=${RELEASE_VERSION}" > gradle.properties
+      
+      - name: Commit and push version update
+        run: |
+          RELEASE_VERSION="${{ inputs.release_version }}"
+          RELEASE_BRANCH="release-${RELEASE_VERSION}"
+          
+          git add gradle.properties
+          git commit -m "Release version ${RELEASE_VERSION}"
+          git push origin "${RELEASE_BRANCH}"
+      
+      - name: Build with Gradle
+        run: ./gradlew build
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build and push Docker image
+        run: |
+          RELEASE_VERSION="${{ inputs.release_version }}"
+          DOCKER_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/my-spring-app"
+          
+          echo "Building Docker image with tags: ${RELEASE_VERSION} and latest"
+          
+          # Build image with release version tag
+          docker build -t "${DOCKER_IMAGE}:${RELEASE_VERSION}" .
+          docker build -t "${DOCKER_IMAGE}:latest" .
+          
+          # Push both tags
+          docker push "${DOCKER_IMAGE}:${RELEASE_VERSION}"
+          docker push "${DOCKER_IMAGE}:latest"
+          
+          echo "Docker images pushed successfully:"
+          echo "- ${DOCKER_IMAGE}:${RELEASE_VERSION}"
+          echo "- ${DOCKER_IMAGE}:latest"

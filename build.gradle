@@ -6,7 +6,8 @@ plugins {
 }
 
 group = 'com.example.evooq'
-version = '0.0.1-SNAPSHOT'
+// Version is now read from gradle.properties
+version = project.property('version')
 
 java {
 	toolchain {
