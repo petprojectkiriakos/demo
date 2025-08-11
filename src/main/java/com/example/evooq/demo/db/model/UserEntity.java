@@ -43,6 +43,9 @@ public class UserEntity {
   }
 
   public void setBalance(Double balance) {
+    if (balance < 0) {
+      throw new IllegalArgumentException("Balance cannot be negative");
+    }
     this.balance = balance;
   }
 }
